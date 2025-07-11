@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.fatmawati.noteproductapp.R
 import com.fatmawati.noteproductapp.data.model.Product
+import com.fatmawati.noteproductapp.util.toRupiahFormat
 
 class ProductAdapter(
     private val onAddToCartClicked: (Product) -> Unit
@@ -22,7 +23,7 @@ class ProductAdapter(
 
         fun bind(product: Product) {
             nameTextView.text = product.name
-            priceTextView.text = "Rp ${product.price}" // Format harga sesuai kebutuhan
+            priceTextView.text = product.price.toRupiahFormat()
             addToCartButton.setOnClickListener { onAddToCartClicked(product) }
         }
     }

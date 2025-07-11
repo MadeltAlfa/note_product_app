@@ -1,5 +1,8 @@
 package com.fatmawati.noteproductapp.ui.view
 
+import android.content.Intent
+import android.view.Menu
+import android.view.MenuItem
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
@@ -10,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.DividerItemDecoration
 import com.fatmawati.noteproductapp.R
 import com.fatmawati.noteproductapp.ui.adapter.ProductAdapter
 import com.fatmawati.noteproductapp.ui.viewmodel.ApiResult
@@ -38,6 +42,25 @@ class MainActivity : AppCompatActivity() {
         viewModel.fetchProducts()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_cart -> {
+                startActivity(Intent(this, CartActivity::class.java))
+                true
+            }
+            R.id.menu_history -> {
+                startActivity(Intent(this, HistoryActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun setupRecyclerView() {
         productAdapter = ProductAdapter { product ->
             viewModel.addItemToCart(product.id)
@@ -45,7 +68,15 @@ class MainActivity : AppCompatActivity() {
         }
         recyclerView.apply {
             adapter = productAdapter
-            layoutManager = LinearLayoutManager(this@MainActivity)
+            val linearLayoutManager = LinearLayoutManager(this@MainActivity)
+            layoutManager = linearLayoutManager
+
+            val dividerItemDecoration = DividerItemDecoration(
+                context,
+                linearLayoutManager.orientation
+            )
+
+            addItemDecoration(dividerItemDecoration)
         }
     }
 
