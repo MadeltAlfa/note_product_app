@@ -31,6 +31,8 @@
         <activity android:name=".ui.view.HistoryActivity" />
         <activity android:name=".ui.view.OrderDetailActivity" />
 
+        <activity android:name=".ui.view.AddEditProductActivity" />
+
 
     </application>
 

@@ -9,15 +9,18 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.fatmawati.noteproductapp.R
+import com.fatmawati.noteproductapp.data.model.Product
 import com.fatmawati.noteproductapp.ui.adapter.ProductAdapter
 import com.fatmawati.noteproductapp.ui.viewmodel.ApiResult
 import com.fatmawati.noteproductapp.ui.viewmodel.MainViewModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,6 +30,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var errorTextView: TextView
+
+    private var currentContextMenuPosition: Int = RecyclerView.NO_POSITION
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +44,18 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         observeViewModel()
 
+        viewModel.fetchProducts() // Panggil fetch produk
+
+        val fab: FloatingActionButton = findViewById(R.id.fab_add_product)
+        fab.setOnClickListener {
+            startActivity(Intent(this, AddEditProductActivity::class.java))
+        }
+
+        registerForContextMenu(recyclerView)
+    }
+
+    override fun onResume() {
+        super.onResume()
         viewModel.fetchProducts()
     }
 
@@ -50,11 +67,11 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.menu_cart -> {
-                startActivity(Intent(this, CartActivity::class.java))
+                startActivity(Intent(this, CartActivity::class.java)) // Pastikan CartActivity ada
                 true
             }
             R.id.menu_history -> {
-                startActivity(Intent(this, HistoryActivity::class.java))
+                startActivity(Intent(this, HistoryActivity::class.java)) // Pastikan HistoryActivity ada
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -75,7 +92,6 @@ class MainActivity : AppCompatActivity() {
                 context,
                 linearLayoutManager.orientation
             )
-
             addItemDecoration(dividerItemDecoration)
         }
     }
@@ -102,5 +118,43 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    fun setCurrentContextMenuPosition(position: Int) {
+        currentContextMenuPosition = position
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        if (currentContextMenuPosition != RecyclerView.NO_POSITION && currentContextMenuPosition < productAdapter.itemCount) {
+            val product: Product = productAdapter.currentList[currentContextMenuPosition]
+
+            return when (item.itemId) {
+                R.id.menu_edit -> {
+                    val intent = Intent(this, AddEditProductActivity::class.java)
+                    intent.putExtra("PRODUCT_ID", product.id)
+                    startActivity(intent)
+                    resetContextMenuPosition()
+                    true
+                }
+                R.id.menu_delete -> {
+                    AlertDialog.Builder(this)
+                        .setTitle("Hapus Produk")
+                        .setMessage("Anda yakin ingin menghapus ${product.name}?")
+                        .setPositiveButton("Ya") { _, _ ->
+                            viewModel.deleteProduct(product.id)
+                        }
+                        .setNegativeButton("Tidak", null)
+                        .show()
+                    resetContextMenuPosition()
+                    true
+                }
+                else -> super.onContextItemSelected(item)
+            }
+        }
+        return super.onContextItemSelected(item)
+    }
+
+    private fun resetContextMenuPosition() {
+        currentContextMenuPosition = RecyclerView.NO_POSITION
     }
 }

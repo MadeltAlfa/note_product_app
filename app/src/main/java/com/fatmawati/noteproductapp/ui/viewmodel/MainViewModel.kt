@@ -58,4 +58,17 @@ class MainViewModel : ViewModel() {
             }
         }
     }
+
+    fun deleteProduct(productId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = repository.deleteProduct(productId)
+                if (response.isSuccessful) {
+                    fetchProducts()
+                }
+            } catch (e: Exception) {
+                //
+            }
+        }
+    }
 }
